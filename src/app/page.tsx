@@ -16,25 +16,13 @@ export default function HomePage() {
   useEffect(() => {
     const fetchNovels = async () => {
       try {
-        const data = await novelService.getAllNovels();
+        const page = await novelService.getAllNovels();
         
-        // 1. In ra console để xem mặt mũi thực sự của data (Bấm F12 trên trình duyệt để xem)
-        console.log("Dữ liệu từ Backend:", data); 
+        // In ra console để debug khi cần
+        console.log("Dữ liệu từ Backend:", page); 
 
-        // 2. LỚP PHÒNG THỦ: Kiểm tra xem data nó là hình thù gì
-        if (Array.isArray(data)) {
-          // Trường hợp 1: API trả về thẳng một mảng (List)
-          setNovels(data);
-        } else if (data && Array.isArray((data as any).content)) {
-          // Trường hợp 2: API trả về phân trang của Spring Boot (Page)
-          setNovels((data as any).content);
-        } else if (data && Array.isArray((data as any).data)) {
-          // Trường hợp 3: API trả về có bọc wrapper tự chế (VD: { "data": [...] })
-          setNovels((data as any).data);
-        } else {
-          // Nếu không phải mảng, ép nó về mảng rỗng để web không bị sập (tránh lỗi .map is not a function)
-          setNovels([]); 
-        }
+        // Lấy danh sách truyện từ PageResponse
+        setNovels(page.content || []);
 
       } catch (error) {
         console.error("Lỗi khi tải danh sách truyện:", error);
@@ -87,8 +75,11 @@ export default function HomePage() {
           /* Lưới Grid hiển thị truyện */
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
             {novels.map((novel) => (
-              <div key={novel.id} className="group cursor-pointer flex flex-col">
-                
+              <div
+                key={novel.id}
+                className="group cursor-pointer flex flex-col"
+                onClick={() => router.push(`/novels/${novel.id}`)}
+              >
                 {/* Khung Ảnh Bìa */}
                 <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg shadow-md transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-xl bg-gray-200">
                   {/* Nếu DB chưa có ảnh thì hiển thị cái div màu xám, nếu có thì hiện thẻ img */}
@@ -99,7 +90,9 @@ export default function HomePage() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-gray-400 text-xs">No Cover</div>
+                    <div className="flex h-full w-full items-center justify-center text-gray-400 text-xs">
+                      No Cover
+                    </div>
                   )}
                   
                   {/* Lớp phủ mờ mờ khi di chuột vào (Hover effect) */}
@@ -115,7 +108,6 @@ export default function HomePage() {
                     <span>👁️ {novel.totalViews || 0} lượt đọc</span>
                   </div>
                 </div>
-
               </div>
             ))}
           </div>

@@ -1,12 +1,22 @@
 // File: src/types/novel.ts
 
 export interface NovelResponse {
-  id: string; // Hoặc number tùy theo bạn thiết lập UUID hay Auto Increment
+  id: string; // UUID từ Backend
   title: string;
+  authorName: string;
+  categoryName: string;
   summary: string;
-  coverUrl: string;
+  coverUrl: string | null;
+  status: string;
   totalViews: number;
-  // Tùy thuộc vào Backend của bạn trả về tên tác giả/thể loại thế nào, bạn có thể thêm vào đây:
-  // authorName?: string; 
-  // categoryName?: string;
+  createdAt: string;
+}
+
+export interface PageResponse<T> {
+  content: T[];
+  pageNo: number;
+  pageSize: number;
+  totalElements: number;
+  totalPages: number;
+  isLast: boolean;
 }
