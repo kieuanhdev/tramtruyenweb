@@ -20,3 +20,16 @@ export interface PageResponse<T> {
   totalPages: number;
   isLast: boolean;
 }
+
+export interface CategoryResponse {
+  id: number;
+  name: string;
+  slug: string;
+}
+
+export interface NovelCreateRequest {
+  categoryId: number;
+  title: string;
+  summary: string;
+  coverUrl?: string;
+}
