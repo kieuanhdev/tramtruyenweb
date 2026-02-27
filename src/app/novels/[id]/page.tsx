@@ -160,13 +160,21 @@ export default function NovelDetailPage() {
 
             {/* Danh sách chương */}
             <div className="bg-white rounded-xl shadow-md p-6 sm:p-8">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                 <h3 className="text-lg font-semibold text-gray-900">
                   Danh sách chương
                 </h3>
-                <span className="text-xs text-gray-500">
-                  Tổng: {chapters.length} chương
-                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs text-gray-500">
+                    Tổng: {chapters.length} chương
+                  </span>
+                  <button
+                    onClick={() => router.push(`/novels/${id}/chapters/create`)}
+                    className="text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg shadow-sm transition-colors"
+                  >
+                    Đăng chương
+                  </button>
+                </div>
               </div>
 
               {chapters.length === 0 ? (

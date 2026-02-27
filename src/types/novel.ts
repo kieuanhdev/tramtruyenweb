@@ -51,3 +51,10 @@ export interface ChapterResponse {
   isPublished: boolean;
   publishedAt: string | null;
 }
+
+export interface ChapterCreateRequest {
+  chapterNo: number;
+  title: string;
+  content: string;
+  isPublished?: boolean;
+}
