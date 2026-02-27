@@ -204,7 +204,16 @@ export default function NovelDetailPage() {
                             : "Chưa xuất bản"}
                         </div>
                       </div>
-                      {/* Sau này có thể thêm nút Đọc chương tại đây */}
+                      {ch.isPublished ? (
+                        <button
+                          onClick={() => router.push(`/chapters/${ch.id}`)}
+                          className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                        >
+                          Đọc
+                        </button>
+                      ) : (
+                        <span className="text-xs text-gray-400">Chưa xuất bản</span>
+                      )}
                     </li>
                   ))}
                 </ul>
