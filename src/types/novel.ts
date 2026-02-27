@@ -33,3 +33,21 @@ export interface NovelCreateRequest {
   summary: string;
   coverUrl?: string;
 }
+
+export interface ChapterListResponse {
+  id: string;
+  chapterNo: number;
+  title: string;
+  isPublished: boolean;
+  publishedAt: string | null;
+}
+
+export interface ChapterResponse {
+  id: string;
+  novelId: string;
+  chapterNo: number;
+  title: string;
+  content: string;
+  isPublished: boolean;
+  publishedAt: string | null;
+}

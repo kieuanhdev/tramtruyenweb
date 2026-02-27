@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { novelService } from "@/services/novel.service";
-import { NovelResponse } from "@/types/novel";
 import { authService } from "@/services/auth.service";
+import { chapterService } from "@/services/chapter.service";
+import { ChapterListResponse, NovelResponse } from "@/types/novel";
 
 export default function NovelDetailPage() {
   const params = useParams<{ id: string }>();
@@ -13,23 +14,28 @@ export default function NovelDetailPage() {
   const id = params?.id as string | undefined;
 
   const [novel, setNovel] = useState<NovelResponse | null>(null);
+  const [chapters, setChapters] = useState<ChapterListResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
     if (!id) return;
 
-    const fetchNovel = async () => {
+    const fetchData = async () => {
       setIsLoading(true);
       setError("");
       try {
-        const data = await novelService.getNovelById(id);
-        setNovel(data);
+        const [novelData, chapterPage] = await Promise.all([
+          novelService.getNovelById(id),
+          chapterService.getChaptersByNovel(id),
+        ]);
+        setNovel(novelData);
+        setChapters(chapterPage.content || []);
       } catch (err: unknown) {
         if (axios.isAxiosError(err) && err.response) {
           setError(
             (err.response.data as any)?.message ||
-              "Không tải được thông tin truyện."
+              "Không tải được thông tin truyện hoặc danh sách chương."
           );
         } else {
           setError("Lỗi kết nối đến máy chủ.");
@@ -39,7 +45,7 @@ export default function NovelDetailPage() {
       }
     };
 
-    fetchNovel();
+    fetchData();
   }, [id]);
 
   const handleLogout = () => {
@@ -91,62 +97,110 @@ export default function NovelDetailPage() {
             Không tìm thấy truyện.
           </div>
         ) : (
-          <div className="bg-white rounded-xl shadow-md p-6 sm:p-8">
-            <div className="flex flex-col md:flex-row gap-8">
-              {/* Ảnh bìa */}
-              <div className="md:w-1/3">
-                <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg shadow-md bg-gray-200">
-                  {novel.coverUrl ? (
-                    <img
-                      src={novel.coverUrl}
-                      alt={novel.title}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-gray-400 text-xs">
-                      No Cover
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Thông tin chi tiết */}
-              <div className="md:w-2/3 space-y-4">
-                <div>
-                  <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">
-                    {novel.title}
-                  </h2>
-                  <div className="flex flex-wrap gap-3 text-sm text-gray-600">
-                    <span>Tác giả: {novel.authorName}</span>
-                    <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
-                      {novel.categoryName}
-                    </span>
+          <div className="space-y-6">
+            {/* Thông tin truyện */}
+            <div className="bg-white rounded-xl shadow-md p-6 sm:p-8">
+              <div className="flex flex-col md:flex-row gap-8">
+                {/* Ảnh bìa */}
+                <div className="md:w-1/3">
+                  <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg shadow-md bg-gray-200">
+                    {novel.coverUrl ? (
+                      <img
+                        src={novel.coverUrl}
+                        alt={novel.title}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-gray-400 text-xs">
+                        No Cover
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-4 text-xs sm:text-sm text-gray-500">
-                  <span>👁️ {novel.totalViews ?? 0} lượt đọc</span>
-                  <span>
-                    Trạng thái:{" "}
-                    <span className="font-medium text-gray-700">
-                      {novel.status}
-                    </span>
-                  </span>
-                  <span>
-                    Ngày tạo:{" "}
-                    {new Date(novel.createdAt).toLocaleDateString("vi-VN")}
-                  </span>
-                </div>
+                {/* Thông tin chi tiết */}
+                <div className="md:w-2/3 space-y-4">
+                  <div>
+                    <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 mb-2">
+                      {novel.title}
+                    </h2>
+                    <div className="flex flex-wrap gap-3 text-sm text-gray-600">
+                      <span>Tác giả: {novel.authorName}</span>
+                      <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">
+                        {novel.categoryName}
+                      </span>
+                    </div>
+                  </div>
 
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                    Tóm tắt
-                  </h3>
-                  <p className="text-sm leading-relaxed text-gray-700 whitespace-pre-line">
-                    {novel.summary || "Chưa có tóm tắt cho truyện này."}
-                  </p>
+                  <div className="flex flex-wrap gap-4 text-xs sm:text-sm text-gray-500">
+                    <span>👁️ {novel.totalViews ?? 0} lượt đọc</span>
+                    <span>
+                      Trạng thái:{" "}
+                      <span className="font-medium text-gray-700">
+                        {novel.status}
+                      </span>
+                    </span>
+                    <span>
+                      Ngày tạo:{" "}
+                      {new Date(novel.createdAt).toLocaleDateString("vi-VN")}
+                    </span>
+                  </div>
+
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Tóm tắt
+                    </h3>
+                    <p className="text-sm leading-relaxed text-gray-700 whitespace-pre-line">
+                      {novel.summary || "Chưa có tóm tắt cho truyện này."}
+                    </p>
+                  </div>
                 </div>
               </div>
+            </div>
+
+            {/* Danh sách chương */}
+            <div className="bg-white rounded-xl shadow-md p-6 sm:p-8">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Danh sách chương
+                </h3>
+                <span className="text-xs text-gray-500">
+                  Tổng: {chapters.length} chương
+                </span>
+              </div>
+
+              {chapters.length === 0 ? (
+                <p className="text-sm text-gray-500">
+                  Truyện này chưa có chương nào.
+                </p>
+              ) : (
+                <ul className="divide-y divide-gray-100">
+                  {chapters.map((ch) => (
+                    <li
+                      key={ch.id}
+                      className="py-3 flex items-center justify-between text-sm"
+                    >
+                      <div>
+                        <div className="font-medium text-gray-900">
+                          Chương {ch.chapterNo}: {ch.title}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {ch.isPublished
+                            ? `Đã xuất bản${
+                                ch.publishedAt
+                                  ? ` - ${new Date(
+                                      ch.publishedAt
+                                    ).toLocaleString("vi-VN")}`
+                                  : ""
+                              }`
+                            : "Chưa xuất bản"}
+                        </div>
+                      </div>
+                      {/* Sau này có thể thêm nút Đọc chương tại đây */}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         )}
