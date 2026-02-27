@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { authService } from "@/services/auth.service";
 import axios from "axios";
 
@@ -99,7 +100,12 @@ export default function LoginPage() {
 
         <div className="mt-6 text-center text-sm text-gray-600">
           Chưa có tài khoản?{" "}
-          <a href="#" className="text-blue-600 hover:underline font-medium">Đăng ký ngay</a>
+          <Link
+            href="/register"
+            className="text-blue-600 hover:underline font-medium"
+          >
+            Đăng ký ngay
+          </Link>
         </div>
       </div>
     </div>
