@@ -36,6 +36,8 @@ export function CommentItem({
   const [editContent, setEditContent] = useState(comment.content);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const [isLiking, setIsLiking] = useState(false);
+  const [isDisliking, setIsDisliking] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
   const isOwner = currentUserId != null && currentUserId === comment.userId;
@@ -71,6 +73,42 @@ export function CommentItem({
   const handleEditClick = () => {
     setShowMoreMenu(false);
     setIsEditing(true);
+  };
+
+  const handleLike = async () => {
+    if (!isLoggedIn) {
+      alert("Vui lòng đăng nhập để thích bình luận.");
+      return;
+    }
+    setIsLiking(true);
+    try {
+      const updated = await commentService.toggleLike(comment.id);
+      onUpdated(updated);
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response) {
+        alert((err.response.data as any)?.message || "Không thể thích.");
+      }
+    } finally {
+      setIsLiking(false);
+    }
+  };
+
+  const handleDislike = async () => {
+    if (!isLoggedIn) {
+      alert("Vui lòng đăng nhập để bày tỏ không thích.");
+      return;
+    }
+    setIsDisliking(true);
+    try {
+      const updated = await commentService.toggleDislike(comment.id);
+      onUpdated(updated);
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err) && err.response) {
+        alert((err.response.data as any)?.message || "Không thể bày tỏ.");
+      }
+    } finally {
+      setIsDisliking(false);
+    }
   };
 
   const handleUpdate = async () => {
@@ -140,22 +178,44 @@ export function CommentItem({
           {!isEditing && (
             <div className="flex items-center gap-4 mt-2 text-xs">
               <button
-                className="flex items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors"
+                onClick={handleLike}
+                disabled={isLiking}
+                className={`flex items-center gap-1 transition-colors disabled:opacity-50 ${
+                  comment.userReaction === "LIKE"
+                    ? "text-blue-600 font-medium"
+                    : "text-gray-500 hover:text-blue-600"
+                }`}
                 title="Thích"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-4 h-4"
+                  fill={comment.userReaction === "LIKE" ? "currentColor" : "none"}
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
                 </svg>
-                Thích
+                Thích {(comment.likeCount ?? 0) > 0 && <span>({comment.likeCount})</span>}
               </button>
               <button
-                className="flex items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors"
+                onClick={handleDislike}
+                disabled={isDisliking}
+                className={`flex items-center gap-1 transition-colors disabled:opacity-50 ${
+                  comment.userReaction === "DISLIKE"
+                    ? "text-red-600 font-medium"
+                    : "text-gray-500 hover:text-red-600"
+                }`}
                 title="Không thích"
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="w-4 h-4"
+                  fill={comment.userReaction === "DISLIKE" ? "currentColor" : "none"}
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2M5 4h2a2 2 0 012 2v6a2 2 0 01-2 2H5" />
                 </svg>
-                Không thích
+                Không thích {(comment.dislikeCount ?? 0) > 0 && <span>({comment.dislikeCount})</span>}
               </button>
               {isLoggedIn && !comment.parentCommentId && (
                 <button

@@ -8,6 +8,9 @@ export interface CommentResponse {
   novelId: string | null;
   chapterId: string | null;
   parentCommentId: string | null;
+  likeCount: number;
+  dislikeCount: number;
+  userReaction: "LIKE" | "DISLIKE" | null;
   replies: CommentResponse[];
 }
 
