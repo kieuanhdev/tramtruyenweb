@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { commentService } from "@/services/comment.service";
 import { CommentResponse } from "@/types/comment";
@@ -35,11 +35,25 @@ export function CommentItem({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showMoreMenu, setShowMoreMenu] = useState(false);
+  const moreMenuRef = useRef<HTMLDivElement>(null);
 
   const isOwner = currentUserId != null && currentUserId === comment.userId;
   const isAdmin = currentUserRole === "ADMIN";
+  const canEditOrDelete = isOwner || isAdmin;
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (moreMenuRef.current && !moreMenuRef.current.contains(e.target as Node)) {
+        setShowMoreMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleDelete = async () => {
+    setShowMoreMenu(false);
     if (!confirm("Bạn có chắc muốn xóa bình luận này?")) return;
     setIsDeleting(true);
     try {
@@ -52,6 +66,11 @@ export function CommentItem({
     } finally {
       setIsDeleting(false);
     }
+  };
+
+  const handleEditClick = () => {
+    setShowMoreMenu(false);
+    setIsEditing(true);
   };
 
   const handleUpdate = async () => {
@@ -118,32 +137,68 @@ export function CommentItem({
             </p>
           )}
 
-          {!isEditing && isLoggedIn && (
-            <div className="flex gap-3 mt-2">
-              {!comment.parentCommentId && (
+          {!isEditing && (
+            <div className="flex items-center gap-4 mt-2 text-xs">
+              <button
+                className="flex items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors"
+                title="Thích"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5" />
+                </svg>
+                Thích
+              </button>
+              <button
+                className="flex items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors"
+                title="Không thích"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2M5 4h2a2 2 0 012 2v6a2 2 0 01-2 2H5" />
+                </svg>
+                Không thích
+              </button>
+              {isLoggedIn && !comment.parentCommentId && (
                 <button
                   onClick={() => setShowReplyForm((v) => !v)}
-                  className="text-xs text-blue-600 hover:text-blue-700"
+                  className="flex items-center gap-1 text-gray-500 hover:text-blue-600 transition-colors"
                 >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                  </svg>
                   Phản hồi
                 </button>
               )}
-              {isOwner && (
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="text-xs text-gray-500 hover:text-gray-700"
-                >
-                  Sửa
-                </button>
-              )}
-              {(isOwner || isAdmin) && (
-                <button
-                  onClick={handleDelete}
-                  disabled={isDeleting}
-                  className="text-xs text-red-600 hover:text-red-700 disabled:opacity-50"
-                >
-                  Xóa
-                </button>
+              {canEditOrDelete && (
+                <div className="relative ml-auto" ref={moreMenuRef}>
+                  <button
+                    onClick={() => setShowMoreMenu((v) => !v)}
+                    className="flex items-center justify-center w-7 h-7 rounded-full text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                    title="Tùy chọn"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                    </svg>
+                  </button>
+                  {showMoreMenu && (
+                    <div className="absolute right-0 top-full mt-1 py-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                      {isOwner && (
+                        <button
+                          onClick={handleEditClick}
+                          className="w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-50 text-sm"
+                        >
+                          Sửa
+                        </button>
+                      )}
+                      <button
+                        onClick={handleDelete}
+                        disabled={isDeleting}
+                        className="w-full px-3 py-2 text-left text-red-600 hover:bg-red-50 disabled:opacity-50 text-sm"
+                      >
+                        Xóa
+                      </button>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           )}
@@ -166,7 +221,7 @@ export function CommentItem({
         </div>
       )}
 
-          {comment.replies && comment.replies.length > 0 && (
+      {comment.replies && comment.replies.length > 0 && (
         <ul className="mt-3 space-y-2">
           {comment.replies.map((r) => (
             <CommentItem
@@ -175,8 +230,8 @@ export function CommentItem({
               novelId={novelId}
               chapterId={chapterId}
               isLoggedIn={isLoggedIn}
-                  currentUserId={currentUserId}
-                  currentUserRole={currentUserRole}
+              currentUserId={currentUserId}
+              currentUserRole={currentUserRole}
               onDeleted={onDeleted}
               onUpdated={onUpdated}
               onReplyCreated={onReplyCreated}
