@@ -1,10 +1,14 @@
-import { api } from '@/core/api';
-import { UserCreateRequest, UserResponse } from '@/types/user';
+import { api } from "@/core/api";
+import { UserCreateRequest, UserResponse } from "@/types/user";
 
 export const userService = {
   createUser: async (data: UserCreateRequest): Promise<UserResponse> => {
-    const response = await api.post<UserResponse>('/users', data);
+    const response = await api.post<UserResponse>("/users", data);
+    return response.data;
+  },
+
+  getCurrentUser: async (): Promise<UserResponse> => {
+    const response = await api.get<UserResponse>("/users/me");
     return response.data;
   },
 };
-

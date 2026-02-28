@@ -5,6 +5,7 @@ import axios from "axios";
 import { commentService } from "@/services/comment.service";
 import { CommentResponse } from "@/types/comment";
 import { authService } from "@/services/auth.service";
+import { userService } from "@/services/user.service";
 import { CommentForm } from "./CommentForm";
 import { CommentItem } from "./CommentItem";
 
@@ -22,6 +23,8 @@ export function CommentSection({ novelId, chapterId, title = "Bình luận" }: C
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
 
   const targetId = novelId || chapterId;
   const fetchComments = novelId
@@ -31,7 +34,27 @@ export function CommentSection({ novelId, chapterId, title = "Bình luận" }: C
     : null;
 
   useEffect(() => {
-    setIsLoggedIn(!!authService.getToken());
+    const token = authService.getToken();
+    const loggedIn = !!token;
+    setIsLoggedIn(loggedIn);
+
+    if (!loggedIn) {
+      setCurrentUserId(null);
+      setCurrentUserRole(null);
+      return;
+    }
+
+    // Lấy thông tin user hiện tại để biết ai là chủ comment
+    userService
+      .getCurrentUser()
+      .then((user) => {
+        setCurrentUserId(user.id);
+        setCurrentUserRole(user.role);
+      })
+      .catch(() => {
+        setCurrentUserId(null);
+        setCurrentUserRole(null);
+      });
   }, []);
 
   useEffect(() => {
@@ -149,6 +172,8 @@ export function CommentSection({ novelId, chapterId, title = "Bình luận" }: C
               novelId={novelId}
               chapterId={chapterId}
               isLoggedIn={isLoggedIn}
+              currentUserId={currentUserId}
+              currentUserRole={currentUserRole}
               onDeleted={handleCommentDeleted}
               onUpdated={handleCommentUpdated}
               onReplyCreated={handleCommentCreated}
