@@ -4,7 +4,6 @@
 import { useEffect, useState } from "react";
 import { novelService } from "@/services/novel.service";
 import { NovelResponse } from "@/types/novel";
-import { authService } from "@/services/auth.service";
 import { useRouter } from "next/navigation";
 
 export default function HomePage() {
@@ -34,37 +33,8 @@ export default function HomePage() {
     fetchNovels();
   }, []);
 
-  // Hàm Đăng xuất
-  const handleLogout = () => {
-    authService.logout();
-    router.push("/login");
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Thanh Header (Navbar) */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-blue-600 cursor-pointer">
-            Trạm Truyện
-          </h1>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push("/novels/create")}
-              className="text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg shadow-sm transition-colors"
-            >
-              Đăng truyện
-            </button>
-            <button
-              onClick={handleLogout}
-              className="text-sm font-medium text-gray-500 hover:text-red-600 transition-colors"
-            >
-              Đăng xuất
-            </button>
-          </div>
-        </div>
-      </header>
-
       {/* Nội dung chính */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8 border-b pb-4">

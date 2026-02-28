@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { novelService } from "@/services/novel.service";
-import { authService } from "@/services/auth.service";
 import { chapterService } from "@/services/chapter.service";
 import { ChapterListResponse, NovelResponse } from "@/types/novel";
 import { CommentSection } from "@/components/comments/CommentSection";
@@ -49,41 +48,8 @@ export default function NovelDetailPage() {
     fetchData();
   }, [id]);
 
-  const handleLogout = () => {
-    authService.logout();
-    router.push("/login");
-  };
-
-  const handleBack = () => {
-    router.push("/");
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleBack}
-              className="text-sm text-gray-500 hover:text-blue-600 transition-colors"
-            >
-              ← Quay lại
-            </button>
-            <h1 className="text-2xl font-bold text-blue-600 cursor-pointer">
-              Trạm Truyện
-            </h1>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-sm font-medium text-gray-500 hover:text-red-600 transition-colors"
-          >
-            Đăng xuất
-          </button>
-        </div>
-      </header>
-
-      {/* Nội dung */}
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {isLoading ? (
           <div className="flex justify-center items-center h-64">

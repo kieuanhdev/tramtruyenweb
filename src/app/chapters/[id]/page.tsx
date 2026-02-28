@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { chapterService } from "@/services/chapter.service";
 import { ChapterResponse } from "@/types/novel";
-import { authService } from "@/services/auth.service";
 import { CommentSection } from "@/components/comments/CommentSection";
 
 export default function ChapterReadPage() {
@@ -43,11 +42,6 @@ export default function ChapterReadPage() {
     fetchChapter();
   }, [id]);
 
-  const handleLogout = () => {
-    authService.logout();
-    router.push("/login");
-  };
-
   const handleBackToNovel = () => {
     if (chapter?.novelId) {
       router.push(`/novels/${chapter.novelId}`);
@@ -58,28 +52,6 @@ export default function ChapterReadPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <button
-            onClick={handleBackToNovel}
-            className="text-sm text-gray-500 hover:text-blue-600 transition-colors"
-          >
-            ← Quay lại truyện
-          </button>
-          <h1 className="text-xl font-bold text-blue-600 cursor-pointer">
-            Trạm Truyện
-          </h1>
-          <button
-            onClick={handleLogout}
-            className="text-sm font-medium text-gray-500 hover:text-red-600 transition-colors"
-          >
-            Đăng xuất
-          </button>
-        </div>
-      </header>
-
-      {/* Nội dung chương */}
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
