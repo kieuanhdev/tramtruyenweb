@@ -7,6 +7,7 @@ import { novelService } from "@/services/novel.service";
 import { authService } from "@/services/auth.service";
 import { chapterService } from "@/services/chapter.service";
 import { ChapterListResponse, NovelResponse } from "@/types/novel";
+import { CommentSection } from "@/components/comments/CommentSection";
 
 export default function NovelDetailPage() {
   const params = useParams<{ id: string }>();
@@ -219,6 +220,9 @@ export default function NovelDetailPage() {
                 </ul>
               )}
             </div>
+
+            {/* Bình luận truyện */}
+            <CommentSection novelId={id} title="Bình luận truyện" />
           </div>
         )}
       </main>

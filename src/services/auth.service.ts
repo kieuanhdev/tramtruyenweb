@@ -20,5 +20,12 @@ export const authService = {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('accessToken');
     }
+  },
+
+  getToken: (): string | null => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('accessToken');
+    }
+    return null;
   }
 };

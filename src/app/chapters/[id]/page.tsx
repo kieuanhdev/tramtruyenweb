@@ -6,6 +6,7 @@ import axios from "axios";
 import { chapterService } from "@/services/chapter.service";
 import { ChapterResponse } from "@/types/novel";
 import { authService } from "@/services/auth.service";
+import { CommentSection } from "@/components/comments/CommentSection";
 
 export default function ChapterReadPage() {
   const params = useParams<{ id: string }>();
@@ -97,34 +98,40 @@ export default function ChapterReadPage() {
             Chương này chưa được xuất bản.
           </div>
         ) : (
-          <article className="bg-white rounded-xl shadow-md p-6 sm:p-10">
-            <header className="border-b border-gray-200 pb-6 mb-6">
-              <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                Chương {chapter.chapterNo}: {chapter.title}
-              </h2>
-              {chapter.publishedAt && (
-                <p className="mt-2 text-sm text-gray-500">
-                  Xuất bản:{" "}
-                  {new Date(chapter.publishedAt).toLocaleString("vi-VN")}
-                </p>
-              )}
-            </header>
+          <>
+            <article className="bg-white rounded-xl shadow-md p-6 sm:p-10">
+              <header className="border-b border-gray-200 pb-6 mb-6">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                  Chương {chapter.chapterNo}: {chapter.title}
+                </h2>
+                {chapter.publishedAt && (
+                  <p className="mt-2 text-sm text-gray-500">
+                    Xuất bản:{" "}
+                    {new Date(chapter.publishedAt).toLocaleString("vi-VN")}
+                  </p>
+                )}
+              </header>
 
-            <div className="prose prose-gray max-w-none">
-              <div className="text-gray-700 leading-relaxed whitespace-pre-line font-serif text-base sm:text-lg">
-                {chapter.content}
+              <div className="prose prose-gray max-w-none">
+                <div className="text-gray-700 leading-relaxed whitespace-pre-line font-serif text-base sm:text-lg">
+                  {chapter.content}
+                </div>
               </div>
-            </div>
 
-            <footer className="mt-10 pt-6 border-t border-gray-200">
-              <button
-                onClick={handleBackToNovel}
-                className="text-sm font-medium text-blue-600 hover:text-blue-700"
-              >
-                ← Quay lại danh sách chương
-              </button>
-            </footer>
-          </article>
+              <footer className="mt-10 pt-6 border-t border-gray-200">
+                <button
+                  onClick={handleBackToNovel}
+                  className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                >
+                  ← Quay lại danh sách chương
+                </button>
+              </footer>
+            </article>
+
+            <div className="mt-8">
+              <CommentSection chapterId={id} title="Bình luận chương" />
+            </div>
+          </>
         )}
       </main>
     </div>
