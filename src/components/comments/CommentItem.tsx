@@ -35,6 +35,7 @@ export function CommentItem({
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState(comment.content);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
   const [isDisliking, setIsDisliking] = useState(false);
@@ -54,9 +55,13 @@ export function CommentItem({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleDelete = async () => {
+  const handleDeleteClick = () => {
     setShowMoreMenu(false);
-    if (!confirm("Bạn có chắc muốn xóa bình luận này?")) return;
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    setShowDeleteConfirm(false);
     setIsDeleting(true);
     try {
       await commentService.deleteComment(comment.id);
@@ -240,9 +245,13 @@ export function CommentItem({
                     </svg>
                   </button>
                   {showMoreMenu && (
-                    <div className="absolute right-0 top-full mt-1 py-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                    <div
+                      className="absolute right-0 top-full mt-1 py-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 z-10"
+                      onMouseDown={(e) => e.stopPropagation()}
+                    >
                       {isOwner && (
                         <button
+                          type="button"
                           onClick={handleEditClick}
                           className="w-full px-3 py-2 text-left text-gray-700 hover:bg-gray-50 text-sm"
                         >
@@ -250,11 +259,12 @@ export function CommentItem({
                         </button>
                       )}
                       <button
-                        onClick={handleDelete}
+                        type="button"
+                        onClick={handleDeleteClick}
                         disabled={isDeleting}
                         className="w-full px-3 py-2 text-left text-red-600 hover:bg-red-50 disabled:opacity-50 text-sm"
                       >
-                        Xóa
+                        {isDeleting ? "Đang xóa..." : "Xóa"}
                       </button>
                     </div>
                   )}
@@ -278,6 +288,33 @@ export function CommentItem({
             }}
             onCancel={() => setShowReplyForm(false)}
           />
+        </div>
+      )}
+
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl max-w-sm w-full p-6">
+            <p className="text-gray-800 font-medium mb-4">
+              Bạn có chắc chắn muốn xóa bình luận này?
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isDeleting ? "Đang xóa..." : "Xóa"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
