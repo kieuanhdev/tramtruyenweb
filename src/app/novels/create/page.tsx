@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { categoryService } from "@/services/category.service";
 import { novelService } from "@/services/novel.service";
 import { CategoryResponse, NovelCreateRequest } from "@/types/novel";
-import { authService } from "@/services/auth.service";
 
 export default function CreateNovelPage() {
   const router = useRouter();
+  const coverInputRef = useRef<HTMLInputElement>(null);
 
   const [categories, setCategories] = useState<CategoryResponse[]>([]);
   const [form, setForm] = useState<NovelCreateRequest>({
@@ -18,6 +18,8 @@ export default function CreateNovelPage() {
     summary: "",
     coverUrl: "",
   });
+  const [coverFile, setCoverFile] = useState<File | null>(null);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
 
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,6 +61,23 @@ export default function CreateNovelPage() {
     }));
   };
 
+  const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        setError("Vui lòng chọn file ảnh (JPEG, PNG, GIF, WebP).");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Kích thước ảnh bìa tối đa 5MB.");
+        return;
+      }
+      setCoverFile(file);
+      setCoverPreview(URL.createObjectURL(file));
+      setError("");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -66,11 +85,20 @@ export default function CreateNovelPage() {
     setIsSubmitting(true);
 
     try {
+      let coverUrl = form.coverUrl?.trim() || undefined;
+
+      // Nếu có chọn file ảnh bìa thì tải lên trước
+      if (coverFile) {
+        const { coverUrl: uploadedUrl } =
+          await novelService.uploadCover(coverFile);
+        coverUrl = uploadedUrl;
+      }
+
       const payload: NovelCreateRequest = {
         categoryId: form.categoryId,
         title: form.title.trim(),
         summary: form.summary.trim(),
-        coverUrl: form.coverUrl?.trim() || undefined,
+        coverUrl,
       };
 
       const created = await novelService.createNovel(payload);
@@ -102,42 +130,9 @@ export default function CreateNovelPage() {
     }
   };
 
-  const handleLogout = () => {
-    authService.logout();
-    router.push("/login");
-  };
-
-  const handleBack = () => {
-    router.push("/");
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleBack}
-              className="text-sm text-gray-500 hover:text-blue-600 transition-colors"
-            >
-              ← Quay lại
-            </button>
-            <h1 className="text-2xl font-bold text-blue-600 cursor-pointer">
-              Trạm Truyện
-            </h1>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="text-sm font-medium text-gray-500 hover:text-red-600 transition-colors"
-          >
-            Đăng xuất
-          </button>
-        </div>
-      </header>
-
-      {/* Nội dung */}
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="bg-gray-50 min-h-full">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-xl shadow-md p-6 sm:p-8">
           <h2 className="text-2xl font-bold text-gray-900 mb-2">
             Đăng truyện mới
@@ -218,19 +213,45 @@ export default function CreateNovelPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ảnh bìa (URL)
+                Ảnh bìa
                 <span className="ml-1 text-gray-400 text-xs">
                   (không bắt buộc)
                 </span>
               </label>
-              <input
-                type="url"
-                name="coverUrl"
-                value={form.coverUrl}
-                onChange={handleChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                placeholder="https://..."
-              />
+              <div className="flex flex-col sm:flex-row gap-4 items-start">
+                <div className="w-32 h-40 rounded-lg overflow-hidden bg-gray-100 border border-gray-200 flex-shrink-0">
+                  {coverPreview ? (
+                    <img
+                      src={coverPreview}
+                      alt="Preview bìa"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-gray-400 text-sm">
+                      Chưa chọn
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1">
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
+                    onChange={handleCoverChange}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => coverInputRef.current?.click()}
+                    className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                  >
+                    Chọn ảnh bìa
+                  </button>
+                  <p className="mt-1 text-xs text-gray-500">
+                    JPEG, PNG, GIF, WebP. Tối đa 5MB.
+                  </p>
+                </div>
+              </div>
             </div>
 
             <button
@@ -247,7 +268,7 @@ export default function CreateNovelPage() {
             </button>
           </form>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

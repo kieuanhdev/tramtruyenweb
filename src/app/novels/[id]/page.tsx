@@ -7,6 +7,7 @@ import { novelService } from "@/services/novel.service";
 import { chapterService } from "@/services/chapter.service";
 import { ChapterListResponse, NovelResponse } from "@/types/novel";
 import { CommentSection } from "@/components/comments/CommentSection";
+import { getAvatarUrl } from "@/core/utils";
 
 export default function NovelDetailPage() {
   const params = useParams<{ id: string }>();
@@ -73,7 +74,7 @@ export default function NovelDetailPage() {
                   <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg shadow-md bg-gray-200">
                     {novel.coverUrl ? (
                       <img
-                        src={novel.coverUrl}
+                        src={getAvatarUrl(novel.coverUrl) || novel.coverUrl}
                         alt={novel.title}
                         className="h-full w-full object-cover"
                       />

@@ -22,4 +22,15 @@ export const novelService = {
     const response = await api.post<NovelResponse>("/novels", data);
     return response.data;
   },
+
+  // Tải ảnh bìa truyện lên
+  uploadCover: async (file: File): Promise<{ coverUrl: string }> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await api.post<{ coverUrl: string }>(
+      "/novels/upload-cover",
+      formData
+    );
+    return response.data;
+  },
 };

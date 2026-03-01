@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { novelService } from "@/services/novel.service";
 import { NovelResponse } from "@/types/novel";
 import { useRouter } from "next/navigation";
+import { getAvatarUrl } from "@/core/utils";
 
 export default function HomePage() {
   const router = useRouter();
@@ -65,7 +66,7 @@ export default function HomePage() {
                   {/* Nếu DB chưa có ảnh thì hiển thị cái div màu xám, nếu có thì hiện thẻ img */}
                   {novel.coverUrl ? (
                     <img
-                      src={novel.coverUrl}
+                      src={getAvatarUrl(novel.coverUrl) || novel.coverUrl}
                       alt={novel.title}
                       className="h-full w-full object-cover"
                     />
