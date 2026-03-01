@@ -5,6 +5,7 @@ import axios from "axios";
 import { commentService } from "@/services/comment.service";
 import { CommentResponse } from "@/types/comment";
 import { CommentForm } from "./CommentForm";
+import { getAvatarUrl } from "@/core/utils";
 
 interface CommentItemProps {
   comment: CommentResponse;
@@ -145,7 +146,7 @@ export function CommentItem({
         <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-sm">
           {comment.userAvatarUrl && !avatarError ? (
             <img
-              src={comment.userAvatarUrl}
+              src={getAvatarUrl(comment.userAvatarUrl) || comment.userAvatarUrl}
               alt={comment.userFullName || "Avatar"}
               className="w-full h-full object-cover"
               onError={() => setAvatarError(true)}

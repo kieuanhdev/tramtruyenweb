@@ -1,17 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import { userService } from "@/services/user.service";
 import { authService } from "@/services/auth.service";
 import { UserResponse } from "@/types/user";
+import { getAvatarUrl } from "@/core/utils";
 
 export default function ProfilePage() {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [user, setUser] = useState<UserResponse | null>(null);
   const [fullName, setFullName] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
@@ -30,7 +33,6 @@ export default function ProfilePage() {
         const data = await userService.getCurrentUser();
         setUser(data);
         setFullName(data.fullName);
-        setAvatarUrl(data.avatarUrl || "");
       } catch (err: unknown) {
         if (axios.isAxiosError(err) && err.response) {
           setError(
@@ -48,6 +50,23 @@ export default function ProfilePage() {
     fetchUser();
   }, [router]);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        setError("Vui lòng chọn file ảnh (JPEG, PNG, GIF, WebP).");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        setError("Kích thước ảnh tối đa 5MB.");
+        return;
+      }
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+      setError("");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -55,9 +74,15 @@ export default function ProfilePage() {
     setIsSaving(true);
 
     try {
+      if (avatarFile) {
+        const updated = await userService.uploadAvatar(avatarFile);
+        setUser(updated);
+        setAvatarFile(null);
+        setAvatarPreview(null);
+        if (fileInputRef.current) fileInputRef.current.value = "";
+      }
       const updated = await userService.updateCurrentUser({
         fullName: fullName.trim(),
-        avatarUrl: avatarUrl.trim() || undefined,
       });
       setUser(updated);
       setSuccess("Cập nhật thông tin thành công!");
@@ -101,11 +126,17 @@ export default function ProfilePage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="flex justify-center mb-6">
+            <div className="flex flex-col items-center mb-6">
               <div className="relative">
-                {avatarUrl ? (
+                {avatarPreview ? (
                   <img
-                    src={avatarUrl}
+                    src={avatarPreview}
+                    alt="Avatar preview"
+                    className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
+                  />
+                ) : user?.avatarUrl ? (
+                  <img
+                    src={getAvatarUrl(user.avatarUrl) || ""}
                     alt="Avatar"
                     className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
                   />
@@ -115,6 +146,23 @@ export default function ProfilePage() {
                   </div>
                 )}
               </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/gif,image/webp"
+                onChange={handleFileChange}
+                className="hidden"
+              />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="mt-3 text-sm font-medium text-blue-600 hover:text-blue-700"
+              >
+                Chọn ảnh đại diện
+              </button>
+              <p className="mt-1 text-xs text-gray-500">
+                JPEG, PNG, GIF, WebP. Tối đa 5MB.
+              </p>
             </div>
 
             <div>
@@ -143,19 +191,6 @@ export default function ProfilePage() {
                 onChange={(e) => setFullName(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                 placeholder="Nguyễn Văn A"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ảnh đại diện (URL)
-              </label>
-              <input
-                type="url"
-                value={avatarUrl}
-                onChange={(e) => setAvatarUrl(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                placeholder="https://..."
               />
             </div>
 

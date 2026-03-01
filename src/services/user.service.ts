@@ -22,4 +22,11 @@ export const userService = {
     const response = await api.put<UserResponse>("/users/me", data);
     return response.data;
   },
+
+  uploadAvatar: async (file: File): Promise<UserResponse> => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await api.post<UserResponse>("/users/me/avatar", formData);
+    return response.data;
+  },
 };
