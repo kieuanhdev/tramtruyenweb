@@ -13,6 +13,7 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [avatarUrl, setAvatarUrl] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -36,6 +37,7 @@ export default function RegisterPage() {
         password,
         fullName,
         avatarUrl: avatarUrl || undefined,
+        dateOfBirth: dateOfBirth || undefined,
       });
 
       setSuccess("Đăng ký thành công! Vui lòng đăng nhập.");
@@ -131,6 +133,19 @@ export default function RegisterPage() {
               onChange={(e) => setConfirmPassword(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
               placeholder="••••••••"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Ngày sinh{" "}
+              <span className="text-gray-400 text-xs">(không bắt buộc)</span>
+            </label>
+            <input
+              type="date"
+              value={dateOfBirth}
+              onChange={(e) => setDateOfBirth(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
             />
           </div>
 

@@ -13,6 +13,7 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [user, setUser] = useState<UserResponse | null>(null);
   const [fullName, setFullName] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -33,6 +34,7 @@ export default function ProfilePage() {
         const data = await userService.getCurrentUser();
         setUser(data);
         setFullName(data.fullName);
+        setDateOfBirth(data.dateOfBirth || "");
       } catch (err: unknown) {
         if (axios.isAxiosError(err) && err.response) {
           setError(
@@ -83,6 +85,7 @@ export default function ProfilePage() {
       }
       const updated = await userService.updateCurrentUser({
         fullName: fullName.trim(),
+        dateOfBirth: dateOfBirth || null,
       });
       setUser(updated);
       setSuccess("Cập nhật thông tin thành công!");
@@ -191,6 +194,19 @@ export default function ProfilePage() {
                 onChange={(e) => setFullName(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
                 placeholder="Nguyễn Văn A"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Ngày sinh{" "}
+                <span className="text-gray-400 text-xs">(không bắt buộc)</span>
+              </label>
+              <input
+                type="date"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
               />
             </div>
 
