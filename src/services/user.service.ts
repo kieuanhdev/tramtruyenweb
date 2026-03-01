@@ -1,5 +1,9 @@
 import { api } from "@/core/api";
-import { UserCreateRequest, UserResponse } from "@/types/user";
+import {
+  UserCreateRequest,
+  UserResponse,
+  UserUpdateRequest,
+} from "@/types/user";
 
 export const userService = {
   createUser: async (data: UserCreateRequest): Promise<UserResponse> => {
@@ -9,6 +13,13 @@ export const userService = {
 
   getCurrentUser: async (): Promise<UserResponse> => {
     const response = await api.get<UserResponse>("/users/me");
+    return response.data;
+  },
+
+  updateCurrentUser: async (
+    data: UserUpdateRequest
+  ): Promise<UserResponse> => {
+    const response = await api.put<UserResponse>("/users/me", data);
     return response.data;
   },
 };

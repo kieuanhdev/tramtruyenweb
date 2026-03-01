@@ -5,6 +5,11 @@ export interface UserCreateRequest {
   avatarUrl?: string;
 }
 
+export interface UserUpdateRequest {
+  fullName: string;
+  avatarUrl?: string | null;
+}
+
 export interface UserResponse {
   id: string;
   email: string;

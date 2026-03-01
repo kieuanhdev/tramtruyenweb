@@ -31,7 +31,7 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Left: Back + Logo */}
         <div className="flex items-center gap-4">
-          {(isNovelDetail || isChapterCreate || pathname === "/novels/create" || pathname.startsWith("/chapters/")) && (
+          {(isNovelDetail || isChapterCreate || pathname === "/novels/create" || pathname === "/profile" || pathname.startsWith("/chapters/")) && (
             <button
               onClick={handleBack}
               className="text-sm text-gray-500 hover:text-blue-600 transition-colors whitespace-nowrap"
@@ -52,12 +52,20 @@ export function Navbar() {
           {isLoggedIn ? (
             <>
               {!isLoginPage && !isRegisterPage && (
-                <Link
-                  href="/novels/create"
-                  className="text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg shadow-sm transition-colors"
-                >
-                  Đăng truyện
-                </Link>
+                <>
+                  <Link
+                    href="/novels/create"
+                    className="text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg shadow-sm transition-colors"
+                  >
+                    Đăng truyện
+                  </Link>
+                  <Link
+                    href="/profile"
+                    className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors"
+                  >
+                    Tài khoản
+                  </Link>
+                </>
               )}
               <button
                 onClick={handleLogout}
