@@ -39,6 +39,7 @@ export function CommentItem({
   const [showMoreMenu, setShowMoreMenu] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
   const [isDisliking, setIsDisliking] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
 
   const isOwner = currentUserId != null && currentUserId === comment.userId;
@@ -54,6 +55,10 @@ export function CommentItem({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    setAvatarError(false);
+  }, [comment.userAvatarUrl]);
 
   const handleDeleteClick = () => {
     setShowMoreMenu(false);
@@ -137,8 +142,17 @@ export function CommentItem({
   return (
     <li className={`py-3 ${ml}`}>
       <div className="flex gap-3">
-        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-sm">
-          {comment.userFullName?.charAt(0)?.toUpperCase() || "?"}
+        <div className="flex-shrink-0 w-8 h-8 rounded-full overflow-hidden bg-blue-100 flex items-center justify-center text-blue-600 font-semibold text-sm">
+          {comment.userAvatarUrl && !avatarError ? (
+            <img
+              src={comment.userAvatarUrl}
+              alt={comment.userFullName || "Avatar"}
+              className="w-full h-full object-cover"
+              onError={() => setAvatarError(true)}
+            />
+          ) : (
+            <span>{comment.userFullName?.charAt(0)?.toUpperCase() || "?"}</span>
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
